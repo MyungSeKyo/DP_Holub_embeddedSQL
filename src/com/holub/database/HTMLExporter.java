@@ -15,6 +15,7 @@ public class HTMLExporter implements Table.Exporter {
         out.write("<body>\n");
     }
     public void storeMetadata( String tableName, int width, int height, Iterator columnNames ) throws IOException {
+        tableName = tableName == null ? "anonymous" : tableName;
         out.write(String.format("\t<h1>%s</h1>\n", tableName));
         out.write("\t<table>\n");
         out.write("\t\t<tr>\n");

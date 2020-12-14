@@ -6,9 +6,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 public class XMLExporter implements Table.Exporter {
+    private final ArrayList<String> columnNames = new ArrayList<String>();
     private final Writer out;
     private String tableName;
-    private ArrayList<String> columnNames = new ArrayList<String>();
 
     public XMLExporter( Writer out ) {
         this.out = out;
@@ -17,7 +17,7 @@ public class XMLExporter implements Table.Exporter {
         out.write("<?xml version=\"1.0\"?>\n");
     }
     public void storeMetadata( String tableName, int width, int height, Iterator columnNames ) throws IOException {
-        this.tableName = tableName;
+        this.tableName = tableName == null ? "anonymous" : tableName;
         while(columnNames.hasNext()){
             this.columnNames.add(columnNames.next().toString());
         }
