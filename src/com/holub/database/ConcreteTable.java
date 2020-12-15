@@ -77,6 +77,12 @@ import com.holub.tools.ArrayIterator;
 		this.tableName = tableName;
 		this.columnNames = (String[]) columnNames.clone();
 	}
+	public LinkedList getRowSet(){
+		return rowSet;
+	}
+	public void accept(TableVisitor visitor){
+		visitor.visit(this);
+	}
 
 	/**********************************************************************
 	 * Return the index of the named column. Throw an IndexOutOfBoundsException if
@@ -600,7 +606,7 @@ import com.holub.tools.ArrayIterator;
 		return isDirty;
 	}
 
-	private int width() {
+	public int width() {
 		return columnNames.length;
 	}
 

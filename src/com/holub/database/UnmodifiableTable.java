@@ -56,6 +56,10 @@ public class UnmodifiableTable implements Table
 	{	this.wrapped = wrapped;
 	}
 
+	public void accept(TableVisitor visitor){
+		visitor.visit(this);
+	}
+
 	/** Return an UnmodifieableTable that wraps a clone of the
 	 *  currently wrapped table. (A deep copy is used.)
 	 */
