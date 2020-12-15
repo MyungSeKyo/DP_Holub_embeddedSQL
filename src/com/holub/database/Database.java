@@ -403,6 +403,10 @@ public final class Database
 		VALUES 		= tokens.create( "'VALUES"	),
 		WHERE		= tokens.create( "'WHERE"	),
 		DISTINCT	= tokens.create( "'DISTINCT"),
+		ORDER		= tokens.create( "'ORDER"	),
+		BY			= tokens.create( "'BY"		),
+		ASC			= tokens.create( "'ASC"		),
+		DESC		= tokens.create( "'DESC"	),
 
 		WORK		= tokens.create( "WORK|TRAN(SACTION)?"		),
 		ADDITIVE	= tokens.create( "\\+|-" 					),
@@ -810,10 +814,25 @@ public final class Database
 
 			Expression where = (in.matchAdvance(WHERE) == null)
 								? null : expr();
+
+			HashMap<String, Boolean> orderingKeys = new HashMap<>();
+			if(in.matchAdvance(ORDER) != null){
+				in.required(BY);
+				do {
+					orderingKeys.put(
+						in.required(IDENTIFIER),
+						in.matchAdvance(DESC) == null
+					);
+				} while(in.matchAdvance(COMMA) != null);
+			}
+
 			Table result = doSelect(columns, into,
 								requestedTableNames, where );
 			if(distinct != null){
 				result.accept(new TableDistinctVisitor());
+			}
+			if(orderingKeys.size() > 0){
+				result.accept(new TableSortingVisitor(orderingKeys));
 			}
 			return result;
 		}
