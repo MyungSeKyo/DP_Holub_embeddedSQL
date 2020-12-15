@@ -18,10 +18,14 @@ public class XMLExporter implements Table.Exporter {
     }
     public void storeMetadata( String tableName, int width, int height, Iterator columnNames ) throws IOException {
         this.tableName = tableName == null ? "anonymous" : tableName;
-        while(columnNames.hasNext()){
-            this.columnNames.add(columnNames.next().toString());
-        }
         out.write("<" + tableName + ">\n");
+        out.write("<columns>");
+        while(columnNames.hasNext()){
+            String columnName = columnNames.next().toString();
+            this.columnNames.add(columnName);
+            out.write(String.format("<item>%s</item>", columnName));
+        }
+        out.write("</columns>\n");
     }
 
     public void storeRow( Iterator data ) throws IOException {
