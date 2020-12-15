@@ -402,6 +402,7 @@ public final class Database
 		USE			= tokens.create( "'USE"		),
 		VALUES 		= tokens.create( "'VALUES"	),
 		WHERE		= tokens.create( "'WHERE"	),
+		DISTINCT	= tokens.create( "'DISTINCT"),
 
 		WORK		= tokens.create( "WORK|TRAN(SACTION)?"		),
 		ADDITIVE	= tokens.create( "\\+|-" 					),
@@ -796,7 +797,9 @@ public final class Database
 			affectedRows = doDelete( tableName, expr() );
 		}
 		else if( in.matchAdvance(SELECT) != null )
-		{	List columns = idList();
+		{
+			String distinct = in.matchAdvance(DISTINCT);
+			List columns = idList();
 
 			String into = null;
 			if( in.matchAdvance(INTO) != null )
@@ -809,6 +812,9 @@ public final class Database
 								? null : expr();
 			Table result = doSelect(columns, into,
 								requestedTableNames, where );
+			if(distinct != null){
+				result.accept(new TableDistinctVisitor());
+			}
 			return result;
 		}
 		else
