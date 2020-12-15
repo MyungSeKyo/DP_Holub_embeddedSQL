@@ -815,13 +815,13 @@ public final class Database
 			Expression where = (in.matchAdvance(WHERE) == null)
 								? null : expr();
 
-			HashMap<String, Boolean> orderingKeys = new HashMap<>();
+			LinkedHashMap<String, Integer> orderingKeys = new LinkedHashMap<>();
 			if(in.matchAdvance(ORDER) != null){
 				in.required(BY);
 				do {
 					orderingKeys.put(
 						in.required(IDENTIFIER),
-						in.matchAdvance(DESC) == null
+						in.matchAdvance(DESC) == null? 1 : -1
 					);
 				} while(in.matchAdvance(COMMA) != null);
 			}
