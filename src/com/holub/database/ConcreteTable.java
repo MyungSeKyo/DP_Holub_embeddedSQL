@@ -80,6 +80,9 @@ import com.holub.tools.ArrayIterator;
 	public LinkedList getRowSet(){
 		return rowSet;
 	}
+	public String[] getColumnNames(){
+		return columnNames;
+	}
 	public void accept(TableVisitor visitor){
 		visitor.visit(this);
 	}
@@ -463,10 +466,14 @@ import com.holub.tools.ArrayIterator;
 		allTables[0] = this;
 		System.arraycopy(otherTables, 0, allTables, 1, otherTables.length);
 
-		// In case *, requestedColumns == null
-		// In that case, copy all columns.
+		// if passed *, requestedColumns == null
+		// copy all columns of all tables
 		if(requestedColumns == null){
-			requestedColumns = (String[])columnNames.clone();
+			LinkedHashSet<String> columns = new LinkedHashSet<>();
+			for(Table table: allTables){
+				columns.addAll(Arrays.asList(((ConcreteTable) table).getColumnNames()));
+			}
+			requestedColumns = columns.toArray(String[]::new);
 		}
 		// Create places to hold the result of the join and to hold
 		// iterators for each table involved in the join.
