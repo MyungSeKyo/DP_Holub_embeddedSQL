@@ -1,0 +1,4 @@
+address
+addrId,	street,	city,	state,	zip
+0,	streetA,	cityA,	stateA,	zipA
+1,	streetB,	cityB,	stateB,	zipB
