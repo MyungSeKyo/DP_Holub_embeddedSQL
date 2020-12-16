@@ -65,9 +65,12 @@ class ConcreteTableTest extends TestCase {
         setData();
         String expected = "<?xml version=\"1.0\"?>\n" +
                 "<address>\n" +
-                "<columns><item>addrId</item><item>street</item><item>city</item><item>state</item><item>zip</item></columns>\n" +
-                "<item><addrId>0</addrId><street>streetA</street><city>cityA</city><state>stateA</state><zip>zipA</zip></item>\n" +
-                "<item><addrId>1</addrId><street>streetB</street><city>cityB</city><state>stateB</state><zip>zipB</zip></item>\n" +
+                "<columns><item>addrId</item><item>street</item><item>city" +
+                "</item><item>state</item><item>zip</item></columns>\n" +
+                "<item><addrId>0</addrId><street>streetA</street><city>cityA" +
+                "</city><state>stateA</state><zip>zipA</zip></item>\n" +
+                "<item><addrId>1</addrId><street>streetB</street><city>cityB" +
+                "</city><state>stateB</state><zip>zipB</zip></item>\n" +
                 "</address>\n";
         StringWriter out = new StringWriter();
         address.export(new XMLExporter(out));
