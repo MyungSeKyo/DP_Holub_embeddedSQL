@@ -802,39 +802,7 @@ public final class Database
 		}
 		else if( in.matchAdvance(SELECT) != null )
 		{
-			String distinct = in.matchAdvance(DISTINCT);
-			List columns = idList();
-
-			String into = null;
-			if( in.matchAdvance(INTO) != null )
-				into = in.required(IDENTIFIER);
-
-			in.required( FROM );
-			List requestedTableNames = idList();
-
-			Expression where = (in.matchAdvance(WHERE) == null)
-								? null : expr();
-
-			LinkedHashMap<String, Integer> orderingKeys = new LinkedHashMap<>();
-			if(in.matchAdvance(ORDER) != null){
-				in.required(BY);
-				do {
-					orderingKeys.put(
-						in.required(IDENTIFIER),
-						in.matchAdvance(DESC) == null? 1 : -1
-					);
-				} while(in.matchAdvance(COMMA) != null);
-			}
-
-			Table result = doSelect(columns, into,
-								requestedTableNames, where );
-			if(distinct != null){
-				result.accept(new TableDistinctVisitor());
-			}
-			if(orderingKeys.size() > 0){
-				result.accept(new TableSortingVisitor(orderingKeys));
-			}
-			return result;
+			return parseSelectStatement();
 		}
 		else
 		{	error("Expected insert, create, drop, use, "
@@ -843,6 +811,7 @@ public final class Database
 
 		return null;
 	}
+
 	//----------------------------------------------------------------------
 	// idList			::= IDENTIFIER idList' | STAR
 	// idList'			::= COMMA IDENTIFIER idList'
@@ -923,6 +892,56 @@ public final class Database
 		return identifiers;
 	}
 
+	private Table parseSelectStatement() throws ParseFailure{
+		String distinct = in.matchAdvance(DISTINCT);
+		List columns = idList();
+
+		String into = null;
+		if( in.matchAdvance(INTO) != null )
+			into = in.required(IDENTIFIER);
+
+		in.required( FROM );
+
+		Table innerTable = null;
+		List requestedTableNames = null;
+		if(in.matchAdvance(LP) != null){
+			in.required(SELECT);
+			innerTable = parseSelectStatement();
+			in.required(RP);
+		} else {
+			requestedTableNames = idList();
+		}
+
+		Expression where = (in.matchAdvance(WHERE) == null)
+				? null : expr();
+
+		LinkedHashMap<String, Integer> orderingKeys = new LinkedHashMap<>();
+		if(in.matchAdvance(ORDER) != null){
+			in.required(BY);
+			do {
+				orderingKeys.put(
+						in.required(IDENTIFIER),
+						in.matchAdvance(DESC) == null? 1 : -1
+				);
+			} while(in.matchAdvance(COMMA) != null);
+		}
+		ArrayList<Table> requestedTables = new ArrayList<>();
+		if(innerTable != null){
+			requestedTables.add(innerTable);
+		} else {
+			for(Object tableName:requestedTableNames){
+				requestedTables.add((Table)tables.get(tableName.toString()));
+			}
+		}
+		Table result = doSelect(columns, into, requestedTables, where );
+		if(distinct != null){
+			result.accept(new TableDistinctVisitor());
+		}
+		if(orderingKeys.size() > 0){
+			result.accept(new TableSortingVisitor(orderingKeys));
+		}
+		return result;
+	}
 	// exprList 		::= 	  expr exprList'
 	// exprList'		::= COMMA expr exprList'
 	// 					|	e
@@ -1415,28 +1434,19 @@ public final class Database
 	// Workhorse methods called from the parser.
 	//
 	private Table doSelect( List columns, String into,
-										List requestedTableNames,
+										List<Table> requestedTables,
 										final Expression where )
 										throws ParseFailure
 	{
 
-		Iterator tableNames = requestedTableNames.iterator();
-
-		assert tableNames.hasNext() : "No tables to use in select!" ;
 
 		// The primary table is the first one listed in the
-		// FROM clause. The participantsInJoin are the other
+		// FROM clause. The requestedTables are the other
 		// tables listed in the FROM clause. We're passed in the
 		// table names; use these names to get the actual Table
 		// objects.
 
-		Table primary = (Table) tables.get( (String) tableNames.next() );
-
-		List participantsInJoin = new ArrayList();
-		while( tableNames.hasNext() )
-		{	String participant = (String) tableNames.next();
-			participantsInJoin.add( tables.get(participant) );
-		}
+		Table primary = requestedTables.remove(0);
 
 		// Now do the select operation. First create a Strategy
 		// object that picks the correct rows, then pass that
@@ -1460,7 +1470,7 @@ public final class Database
 			};
 
 		try
-		{	Table result = primary.select(selector, columns, participantsInJoin);
+		{	Table result = primary.select(selector, columns, requestedTables);
 
 			// If this is a "SELECT INTO <table>" request, remove the 
 			// returned table from the UnmodifiableTable wrapper, give
