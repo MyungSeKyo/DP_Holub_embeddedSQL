@@ -18,7 +18,6 @@ public class XMLImporter implements Table.Importer{
     }
     public void startTable() throws IOException {
         in.readLine(); // Drop xml header
-
         // Parse table name
         Pattern p = Pattern.compile("<(.+?)>");
         Matcher m = p.matcher(in.readLine());
@@ -44,7 +43,6 @@ public class XMLImporter implements Table.Importer{
     public Iterator loadRow() throws IOException {
         String row = in.readLine();
         ArrayList<String> values = new ArrayList<>();
-
         for (String columnName : columnNames) {
             Pattern p = Pattern.compile(String.format("<%s>(.+?)</%s>", columnName, columnName));
             Matcher m = p.matcher(row);
