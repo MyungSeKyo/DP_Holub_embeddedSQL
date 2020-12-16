@@ -1,5 +1,6 @@
 name
 first,	last,	addrId
-Fred,	Flintstone,	1
-Wilma,	Flintstone,	1
-Allen,	Holub,	0
+firstA,	lastA,	1
+firstB,	lastB,	1
+firstC,	lastC,	0
+firstD,	lastD,	0
